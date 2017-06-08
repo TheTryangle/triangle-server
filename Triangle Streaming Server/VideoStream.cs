@@ -25,6 +25,10 @@ namespace Triangle_Streaming_Server
 				// Do somehting with them
 				StreamQueueManager.GetInstance().AddToQueue(receivedBytes);
 			}
+			else
+			{
+				Console.WriteLine("Ignoring received data");
+			}
 		}
 	}
 }
