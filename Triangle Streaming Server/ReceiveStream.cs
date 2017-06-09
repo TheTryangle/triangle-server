@@ -11,6 +11,8 @@ namespace Triangle_Streaming_Server
 	{
         private static AsymmetricCipherKeyPair _keyPair;
 
+        private string _pubKey;
+
         protected override void OnOpen()
 		{
 			Console.WriteLine($"Someone connected to receive, {this.Context.UserEndPoint.ToString()}");
@@ -31,7 +33,18 @@ namespace Triangle_Streaming_Server
                 }
             }
 
-            Send("PUBKEY: " + _keyPair.Public.ToString());
+            //Get public key string
+            if(_pubKey == null)
+            {
+                TextWriter textWriter = new StringWriter();
+                PemWriter pemWriter = new PemWriter(textWriter);
+                pemWriter.WriteObject(_keyPair.Public);
+                pemWriter.Writer.Flush();
+                _pubKey = textWriter.ToString();
+            }
+
+            //Send public key to client
+            Send(_pubKey);
         }
     }
 }
