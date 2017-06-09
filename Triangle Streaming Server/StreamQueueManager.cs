@@ -3,12 +3,23 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using Org.BouncyCastle;
+using Org.BouncyCastle.Crypto;
+using System.IO;
+using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.Crypto.Encodings;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Math;
+using System.Security.Cryptography;
 
 namespace Triangle_Streaming_Server
 {
 	public class StreamQueueManager
 	{
 		private static StreamQueueManager _instance;
+        private static AsymmetricCipherKeyPair _keyPair;
+        private static SHA1CryptoServiceProvider _sha1;
+        private int _queueCount = 0; //This is incremented by one every time a fragment is broadcast.
 
 		public static StreamQueueManager GetInstance()
 		{
@@ -22,7 +33,14 @@ namespace Triangle_Streaming_Server
 
 		private StreamQueueManager()
 		{
-			StreamQueue = new Queue<byte[]>();
+            using (var reader = File.OpenText(AppDomain.CurrentDomain.BaseDirectory + @"\privatekey.pem"))
+            {
+                _keyPair = (AsymmetricCipherKeyPair)new PemReader(reader).ReadObject();
+            }
+
+            _sha1 = new SHA1CryptoServiceProvider();
+
+            StreamQueue = new Queue<byte[]>();
 			RunCheckQueue();
 		}
 
@@ -44,7 +62,27 @@ namespace Triangle_Streaming_Server
 			{
 				byte[] nextVideo = StreamQueue.Dequeue();
 				WebSocketManager.GetInstance().Server.WebSocketServices["/receive"].Sessions.Broadcast(nextVideo);
+
+                if (_queueCount > 5)
+                {
+                    string encryptedHash = EncryptHashBytes(nextVideo);
+                    WebSocketManager.GetInstance().Server.WebSocketServices["/receive"].Sessions.Broadcast(String.Format("HASH: {0}", encryptedHash));
+                    _queueCount = 0;
+                }
+
+                _queueCount++;
 			}
 		}
+
+        private string EncryptHashBytes(byte[] bytesToHash)
+        {
+            var hash = _sha1.ComputeHash(bytesToHash);
+
+            var encryptEngine = new Pkcs1Encoding(new RsaEngine());
+
+            encryptEngine.Init(true, _keyPair.Private);
+
+            return Convert.ToBase64String(encryptEngine.ProcessBlock(hash, 0, hash.Length));
+        }
 	}
 }
