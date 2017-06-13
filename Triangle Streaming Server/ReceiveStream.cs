@@ -27,6 +27,7 @@ namespace Triangle_Streaming_Server
 
             if (_keyPair == null)
             {
+                //Read privatekey.pem from executable directory
                 using (var reader = File.OpenText(AppDomain.CurrentDomain.BaseDirectory + @"\privatekey.pem"))
                 {
                     _keyPair = (AsymmetricCipherKeyPair)new PemReader(reader).ReadObject();
@@ -41,6 +42,7 @@ namespace Triangle_Streaming_Server
                 pemWriter.WriteObject(_keyPair.Public);
                 pemWriter.Writer.Flush();
                 _pubKey = textWriter.ToString();
+                textWriter.Close();
             }
 
             //Send public key to client
