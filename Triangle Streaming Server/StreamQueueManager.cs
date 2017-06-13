@@ -12,6 +12,7 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Math;
 using System.Security.Cryptography;
 using Org.BouncyCastle.Security;
+using System.Linq;
 
 namespace Triangle_Streaming_Server
 {
@@ -20,7 +21,6 @@ namespace Triangle_Streaming_Server
 		private static StreamQueueManager _instance;
 		private static AsymmetricCipherKeyPair _keyPair;
 		private static SHA1CryptoServiceProvider _sha1;
-		private int _queueCount = 0; //This is incremented by one every time a fragment is broadcast.
 
 		public static StreamQueueManager GetInstance()
 		{
@@ -30,7 +30,7 @@ namespace Triangle_Streaming_Server
 			return _instance;
 		}
 
-		public Queue<byte[]> StreamQueue { get; set; }
+		public Dictionary<string, Stream> Streams { get; private set; }
 
 		private StreamQueueManager()
 		{
@@ -41,13 +41,20 @@ namespace Triangle_Streaming_Server
 
 			_sha1 = new SHA1CryptoServiceProvider();
 
-			StreamQueue = new Queue<byte[]>();
+			Streams = new Dictionary<string, Stream>();
 			RunCheckQueue();
 		}
 
-		public void AddToQueue(byte[] item)
+		public void AddToQueue(string ID, byte[] item)
 		{
-			StreamQueue.Enqueue(item);
+			var stream = Streams[ID];
+			if(stream == null)
+			{
+				stream = new Stream(ID);
+				Streams.Add(ID, stream);
+			}
+
+			stream.VideoQueue.Enqueue(item);
 		}
 
 		public void RunCheckQueue()
@@ -59,20 +66,36 @@ namespace Triangle_Streaming_Server
 
 		private void T_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			if (StreamQueue.Count > 0)
+			foreach(Stream stream in Streams.Values)
 			{
-				byte[] nextVideo = StreamQueue.Dequeue();
-				WebSocketManager.GetInstance().Server.WebSocketServices["/receive"].Sessions.Broadcast(nextVideo);
-
-				//Every 5 video fragments, sign a fragment.
-				if (_queueCount >= 5)
+				if (stream.VideoQueue.Count > 0)
 				{
-					string encryptedHash = SignBytes(Convert.ToBase64String(nextVideo));
-					WebSocketManager.GetInstance().Server.WebSocketServices["/receive"].Sessions.Broadcast(String.Format("SIGN: {0}", encryptedHash));
-					_queueCount = 0;
-				}
+					byte[] nextVideo = stream.VideoQueue.Dequeue();
 
-				_queueCount++;
+					//Get the receiving clients
+					//Quite slow. Needs improvements.
+					var receivingClients = ReceiveStream.Clients
+						.Where(pair => pair.Value == stream.ClientID)
+						.Select(pair => pair.Key);
+
+					foreach (string client in receivingClients)
+					{
+						WebSocketManager.GetInstance().Server.WebSocketServices["/receive"].Sessions.SendTo(nextVideo, client);
+					}
+
+					//Every 5 video fragments, sign a fragment.
+					if (stream.FragmentCount >= 5)
+					{
+						string encryptedHash = SignBytes(Convert.ToBase64String(nextVideo));
+						foreach (string client in receivingClients)
+						{
+							WebSocketManager.GetInstance().Server.WebSocketServices["/receive"].Sessions.SendTo("SIGN: " + encryptedHash, client);
+						}
+
+						stream.FragmentCount = 0;
+					}
+					stream.FragmentCount += 1;
+				}
 			}
 		}
 

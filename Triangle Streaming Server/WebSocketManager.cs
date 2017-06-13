@@ -32,6 +32,8 @@ namespace Triangle_Streaming_Server
 			Server.AddWebSocketService<VideoStream>("/send");
 			Server.AddWebSocketService<ReceiveStream>("/receive");
 
+			ReceiveStream.Initialize();
+
 			Server.Start();
 		}
 
