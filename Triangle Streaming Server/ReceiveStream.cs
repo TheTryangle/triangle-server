@@ -65,9 +65,9 @@ namespace Triangle_Streaming_Server
 			}
 			else if(e.Data.StartsWith("WATCH "))
 			{
-				//Strip the first 6 characters from the data string.
-				//Example: "WATCH {ID}" is stripped down to just the ID.
-				string streamToWatch = e.Data.Remove(0, 6);
+				//Strip the "watch" part from the string, leaving just the ID.
+				//Example: "WATCH {ID}" becomes "{ID}".
+				string streamToWatch = e.Data.Replace("WATCH ", "");
 
 				//If the client is already watching a stream, remove client from stream first.
 				if (Clients.ContainsKey(this.ID))
