@@ -13,6 +13,7 @@ using Org.BouncyCastle.Math;
 using System.Security.Cryptography;
 using Org.BouncyCastle.Security;
 using System.Linq;
+using System.Configuration;
 
 namespace Triangle_Streaming_Server
 {
@@ -34,7 +35,8 @@ namespace Triangle_Streaming_Server
 
 		private StreamQueueManager()
 		{
-			using (var reader = File.OpenText(AppDomain.CurrentDomain.BaseDirectory + @"\privatekey.pem"))
+			var path = ConfigurationManager.AppSettings["privateKeyPath"];
+			using (var reader = File.OpenText(path))
 			{
 				_keyPair = (AsymmetricCipherKeyPair)new PemReader(reader).ReadObject();
 			}

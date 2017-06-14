@@ -80,7 +80,7 @@ namespace Triangle_Streaming_Server
 			else if(e.Data.Equals("LIST"))
 			{
 				//Send a list of streams to the client.
-				var streams = JsonConvert.SerializeObject(StreamQueueManager.GetInstance().Streams.Values);
+				var streams = JsonConvert.SerializeObject(StreamQueueManager.GetInstance().Streams.Values.ToList());
 
 				this.Send(streams.ToString());
 			}
