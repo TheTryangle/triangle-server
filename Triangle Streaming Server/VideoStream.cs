@@ -10,7 +10,11 @@ namespace Triangle_Streaming_Server
 		protected override void OnOpen()
 		{
 			Console.WriteLine($"Someone connected to send, {this.Context.UserEndPoint.ToString()}");
+			Console.WriteLine("Their ID is {0}", this.ID);
+
+			StreamQueueManager.GetInstance().Streams.Add(this.ID, new Stream(this.ID));
 		}
+
 		protected override void OnMessage(MessageEventArgs e)
 		{
 			Console.WriteLine("Received data on server");
@@ -23,12 +27,17 @@ namespace Triangle_Streaming_Server
 				byte[] receivedBytes = e.RawData;
 
 				// Do somehting with them
-				StreamQueueManager.GetInstance().AddToQueue(receivedBytes);
+				StreamQueueManager.GetInstance().AddToQueue(this.ID, receivedBytes);
 			}
 			else
 			{
 				Console.WriteLine("Ignoring received data");
 			}
+		}
+
+		protected override void OnClose(CloseEventArgs e)
+		{
+			StreamQueueManager.GetInstance().Streams.Remove(this.ID);
 		}
 	}
 }
