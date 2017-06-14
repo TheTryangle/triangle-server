@@ -13,6 +13,7 @@ using WebSocketSharp;
 using WebSocketSharp.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Configuration;
 
 namespace Triangle_Streaming_Server
 {
@@ -33,7 +34,8 @@ namespace Triangle_Streaming_Server
 			_sha1 = new SHA1CryptoServiceProvider();
 
 			//Read privatekey.pem from executable directory
-			using (var reader = File.OpenText(AppDomain.CurrentDomain.BaseDirectory + @"\privatekey.pem"))
+			var path = ConfigurationManager.AppSettings["privateKeyPath"];
+			using (var reader = File.OpenText(path))
 			{
 				_keyPair = (AsymmetricCipherKeyPair)new PemReader(reader).ReadObject();
 			}
@@ -63,9 +65,11 @@ namespace Triangle_Streaming_Server
 			}
 			else if(e.Data.StartsWith("WATCH "))
 			{
-				//Get the ID specified in the WATCH command (for example, "WATCH 158sadsa489g")
+				//Strip the first 6 characters from the data string.
+				//Example: "WATCH {ID}" is stripped down to just the ID.
 				string streamToWatch = e.Data.Remove(0, 6);
 
+				//If the client is already watching a stream, remove client from stream first.
 				if (Clients.ContainsKey(this.ID))
 				{
 					Clients.Remove(this.ID);
@@ -76,13 +80,7 @@ namespace Triangle_Streaming_Server
 			else if(e.Data.Equals("LIST"))
 			{
 				//Send a list of streams to the client.
-				JArray streams = new JArray();
-				foreach(Stream stream in StreamQueueManager.GetInstance().Streams.Values)
-				{
-					JObject obj = new JObject();
-					obj.Add("id", stream.ClientID);
-					streams.Add(obj);
-				}
+				var streams = JsonConvert.SerializeObject(StreamQueueManager.GetInstance().Streams.Values);
 
 				this.Send(streams.ToString());
 			}
