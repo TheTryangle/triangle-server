@@ -66,7 +66,7 @@ namespace Triangle_Streaming_Server
 
 		private void T_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			foreach(Stream stream in Streams.Values)
+			foreach(Stream stream in Streams.Values.ToList()) //The ToList() call is to prevent modification from throwing exceptions.
 			{
 				if (stream.VideoQueue.Count > 0)
 				{
