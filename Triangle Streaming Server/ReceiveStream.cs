@@ -58,12 +58,7 @@ namespace Triangle_Streaming_Server
 
 		protected override void OnMessage(MessageEventArgs e)
 		{
-			if(e.Data.Equals("PUBKEY"))
-			{
-				//Send public key to client
-				Send(_pubKey);
-			}
-			else if(e.Data.StartsWith("WATCH "))
+			if(e.Data.StartsWith("WATCH "))
 			{
 				//Strip the "watch" part from the string, leaving just the ID.
 				//Example: "WATCH {ID}" becomes "{ID}".
@@ -77,12 +72,39 @@ namespace Triangle_Streaming_Server
 
 				Clients.Add(this.ID, streamToWatch);
 			}
-			else if(e.Data.Equals("LIST"))
+			else if(e.Data.StartsWith("CHALLENGE: "))
 			{
-				//Send a list of streams to the client.
-				var streams = JsonConvert.SerializeObject(StreamQueueManager.GetInstance().Streams.Values.ToList());
+				string challengeString = e.Data.Replace("CHALLENGE: ", "");
 
-				this.Send(streams.ToString());
+				//Convert base64 string back to encrypted bytes
+				var challengeBytes = Convert.FromBase64String(challengeString);
+
+				//Decrypt bytes into string
+				IAsymmetricBlockCipher eng = new Pkcs1Encoding(new RsaEngine());
+				eng.Init(false, _keyPair.Private);
+				var responseString = Encoding.UTF8.GetString(eng.ProcessBlock(challengeBytes, 0, challengeBytes.Length));
+
+				//Send original message back to client
+				this.Send(String.Format("CHALLENGERESPONSE: {0}", responseString));
+			}
+			else
+			{
+				switch(e.Data)
+				{
+					case "PUBKEY":
+						//Send public key to client
+						Send(_pubKey);
+						break;
+					case "LIST":
+						//Send a list of streams to the client.
+						var streams = JsonConvert.SerializeObject(StreamQueueManager.GetInstance().Streams.Values.ToList());
+
+						this.Send(streams.ToString());
+						break;
+					default:
+						Console.WriteLine("Unknown command: {0}", e.Data);
+						break;
+				}
 			}
 		}
 
