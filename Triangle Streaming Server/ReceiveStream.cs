@@ -77,12 +77,12 @@ namespace Triangle_Streaming_Server
 				string challengeString = e.Data.Replace("CHALLENGE: ", "");
 
 				//Convert base64 string back to encrypted bytes
-				var challengeBytes = Convert.FromBase64String(challengeString);
+				byte[] challengeBytes = Convert.FromBase64String(challengeString);
 
 				//Decrypt bytes into string
 				IAsymmetricBlockCipher eng = new Pkcs1Encoding(new RsaEngine());
 				eng.Init(false, _keyPair.Private);
-				var responseString = Encoding.UTF8.GetString(eng.ProcessBlock(challengeBytes, 0, challengeBytes.Length));
+				string responseString = Encoding.UTF8.GetString(eng.ProcessBlock(challengeBytes, 0, challengeBytes.Length));
 
 				//Send original message back to client
 				this.Send(String.Format("CHALLENGERESPONSE: {0}", responseString));
@@ -97,9 +97,9 @@ namespace Triangle_Streaming_Server
 						break;
 					case "LIST":
 						//Send a list of streams to the client.
-						var streams = JsonConvert.SerializeObject(StreamQueueManager.GetInstance().Streams.Values.ToList());
+						string streamsJson = JsonConvert.SerializeObject(StreamQueueManager.GetInstance().Streams.Values.ToList());
 
-						this.Send(streams.ToString());
+						this.Send(streamsJson);
 						break;
 					default:
 						Console.WriteLine("Unknown command: {0}", e.Data);

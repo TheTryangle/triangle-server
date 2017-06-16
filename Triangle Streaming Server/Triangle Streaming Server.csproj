@@ -61,9 +61,7 @@
     <Compile Include="WebSocketManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="App.config" />
     <None Include="packages.config" />
     <None Include="privatekey.pem">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
