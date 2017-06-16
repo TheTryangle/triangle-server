@@ -1,20 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using WebSocketSharp.Server;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
-namespace Triangle_Streaming_Server
+namespace TriangleStreamingServer
 {
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			using (WebSocketManager webManager = WebSocketManager.GetInstance())
-			{
-				Console.ReadKey();
-			}
-		}
-	}
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+				.UseUrls("http://localhost:5000", "http://192.168.2.4:5000")
+				.UseIISIntegration()
+                .UseStartup<Startup>()
+                .UseApplicationInsights()
+                .Build();
+
+            host.Run();
+        }
+    }
 }
