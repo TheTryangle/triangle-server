@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WebSocketSharp.Server;
+using Microsoft.Owin.Hosting;
+using Triangle_Streaming_Server.WebApi;
 
 namespace Triangle_Streaming_Server
 {
@@ -11,10 +8,11 @@ namespace Triangle_Streaming_Server
 	{
 		static void Main(string[] args)
 		{
-			using (WebSocketManager webManager = WebSocketManager.GetInstance())
-			{
-				Console.ReadKey();
-			}
-		}
+            string baseAddressWebApi = "http://localhost:9000/";
+            WebSocketManager webManager = WebSocketManager.GetInstance();
+            WebApp.Start<WebApiStart>(baseAddressWebApi);
+            Console.WriteLine("Press any key to close server.");
+            Console.ReadKey();                  
+        }
 	}
 }
