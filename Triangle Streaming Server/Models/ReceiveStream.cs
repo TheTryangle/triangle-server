@@ -23,7 +23,7 @@ namespace TriangleStreamingServer.Models
 
 		private static string _pubKey;
 
-		public ReceiveStream(WebSocketConnectionManager webSocketConnectionManager) : base(webSocketConnectionManager)
+		public ReceiveStream(WebSocketConnectionManager webSocketConnectionManager, StreamQueueManager streamManager) : base(webSocketConnectionManager, streamManager)
 		{
 			_sha1 = SHA1.Create();
 
@@ -114,7 +114,7 @@ namespace TriangleStreamingServer.Models
 						break;
 					case "LIST":
 						//Send a list of streams to the client.
-						string streamsJson = JsonConvert.SerializeObject(StreamQueueManager.GetInstance().Streams.Values.ToList());
+						string streamsJson = JsonConvert.SerializeObject(StreamManager.Streams.Values.ToList());
 
 						await this.Send(socket, streamsJson);
 						break;

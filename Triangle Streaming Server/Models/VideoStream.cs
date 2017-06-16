@@ -9,7 +9,7 @@ namespace TriangleStreamingServer.Models
 {
 	public class VideoStream : WebSockets.WebSocketHandler
 	{
-		public VideoStream(WebSocketConnectionManager webSocketConnectionManager) : base(webSocketConnectionManager)
+		public VideoStream(WebSocketConnectionManager webSocketConnectionManager, StreamQueueManager streamManager) : base(webSocketConnectionManager, streamManager)
 		{
 		}
 
@@ -19,7 +19,7 @@ namespace TriangleStreamingServer.Models
 			string socketId = WebSocketConnectionManager.GetId(socket);
 
 			Console.WriteLine("Their ID is {0}", socketId);
-			StreamQueueManager.GetInstance().Streams.TryAdd(socketId, new Stream(socketId));
+			StreamManager.Streams.TryAdd(socketId, new Stream(socketId));
 		}
 
 		public override async Task OnMessage(WebSocket socket, WebSocketReceiveResult result, WebSocketMessageType type, byte[] buffer)
@@ -32,7 +32,7 @@ namespace TriangleStreamingServer.Models
 						// binary data
 						string socketId = WebSocketConnectionManager.GetId(socket);
 
-						StreamQueueManager.GetInstance().AddToQueue(socketId, buffer);
+						StreamManager.AddToQueue(socketId, buffer);
 						break;
 					}
 				default:
@@ -47,7 +47,7 @@ namespace TriangleStreamingServer.Models
 		public override Task OnDisconnected(WebSocket socket)
 		{
 			string socketId = WebSocketConnectionManager.GetId(socket);
-			StreamQueueManager.GetInstance().Streams.TryRemove(socketId, out Stream stream);
+			StreamManager.Streams.TryRemove(socketId, out Stream stream);
 
 			return base.OnDisconnected(socket);
 		}

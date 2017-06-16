@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading.Tasks;
+using TriangleStreamingServer.Models;
 
 namespace TriangleStreamingServer.WebSockets
 {
@@ -30,6 +31,13 @@ namespace TriangleStreamingServer.WebSockets
 					services.AddSingleton(type);
 				}
 			}
+
+			return services;
+		}
+
+		public static IServiceCollection AddStreamManager(this IServiceCollection services)
+		{
+			services.AddSingleton<StreamQueueManager>();
 
 			return services;
 		}

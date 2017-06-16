@@ -5,16 +5,19 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TriangleStreamingServer.Models;
 
 namespace TriangleStreamingServer.WebSockets
 {
 	public abstract class WebSocketHandler
 	{
 		protected WebSocketConnectionManager WebSocketConnectionManager { get; set; }
+		protected StreamQueueManager StreamManager { get; set; }
 
-		public WebSocketHandler(WebSocketConnectionManager webSocketConnectionManager)
+		public WebSocketHandler(WebSocketConnectionManager webSocketConnectionManager, StreamQueueManager streamManager)
 		{
 			WebSocketConnectionManager = webSocketConnectionManager;
+			StreamManager = streamManager;
 		}
 
 		public virtual async Task OnConnected(WebSocket socket)

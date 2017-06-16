@@ -24,18 +24,10 @@ namespace TriangleStreamingServer.Models
 		private AsymmetricCipherKeyPair _keyPair;
 		private SHA1 _sha1;
 
-		public static StreamQueueManager GetInstance()
-		{
-			if (_instance == null)
-				_instance = new StreamQueueManager();
-
-			return _instance;
-		}
-
 		public ConcurrentDictionary<string, Stream> Streams { get; private set; }
-		public ReceiveStream ReceivingWebSocket { get; private set; }
+		public ReceiveStream ReceivingWebSocket { get; set; }
 
-		private StreamQueueManager()
+		public StreamQueueManager()
 		{
 			var builder = new ConfigurationBuilder()
 				.SetBasePath(Directory.GetCurrentDirectory())
@@ -52,11 +44,6 @@ namespace TriangleStreamingServer.Models
 
 			Streams = new ConcurrentDictionary<string, Stream>();
 			RunCheckQueue();
-		}
-
-		public void SetReceivingStream(ReceiveStream webSocket)
-		{
-			this.ReceivingWebSocket = webSocket;
 		}
 
 		public void AddToQueue(string ID, byte[] item)

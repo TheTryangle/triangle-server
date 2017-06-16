@@ -34,6 +34,8 @@ namespace TriangleStreamingServer
 			services.AddMvc();
 
 			services.AddWebSocketManager();
+
+			services.AddStreamManager();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,11 +54,11 @@ namespace TriangleStreamingServer
 
 			app.UseWebSockets(webSocketOptions);
 
-			var videoStream = app.ApplicationServices.GetService<VideoStream>();
+			var streamQueueManager = app.ApplicationServices.GetService<StreamQueueManager>();
 			var receiveStream = app.ApplicationServices.GetService<ReceiveStream>();
-			StreamQueueManager.GetInstance().SetReceivingStream(receiveStream);
+			streamQueueManager.ReceivingWebSocket = receiveStream;
 
-			app.MapWebSocketManager("/send", videoStream);
+			app.MapWebSocketManager("/send", app.ApplicationServices.GetService<VideoStream>());
 			app.MapWebSocketManager("/receive", receiveStream);
 		}
 	}
