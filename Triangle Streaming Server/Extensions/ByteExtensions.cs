@@ -85,5 +85,20 @@ namespace Triangle_Streaming_Server.Extensions
 				hex.AppendFormat("{0:x2}", b);
 			return hex.ToString();
 		}
+
+		/// <summary>
+		/// Decrypts the <paramref name="data"/> using the <paramref name="privateKey"/> to an UTF8 string
+		/// </summary>
+		/// <param name="data">The data to decrypt</param>
+		/// <param name="privateKey">The private key used for decryption</param>
+		/// <returns>UTF8 string with decrypted data</returns>
+		public static string Decrypt(this byte[] data, AsymmetricKeyParameter privateKey)
+		{
+			IAsymmetricBlockCipher eng = new Pkcs1Encoding(new RsaEngine());
+			eng.Init(false, privateKey);
+			string decryptedString = Encoding.UTF8.GetString(eng.ProcessBlock(data, 0, data.Length));
+
+			return decryptedString;
+		}
 	}
 }

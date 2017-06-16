@@ -8,6 +8,7 @@ using WebSocketSharp;
 using WebSocketSharp.Server;
 using Newtonsoft.Json;
 using System.Configuration;
+using Triangle_Streaming_Server.Extensions;
 
 namespace Triangle_Streaming_Server
 {
@@ -71,10 +72,8 @@ namespace Triangle_Streaming_Server
 				byte[] challengeBytes = Convert.FromBase64String(challengeString);
 
 				//Decrypt bytes into string
-				IAsymmetricBlockCipher eng = new Pkcs1Encoding(new RsaEngine());
-				eng.Init(false, _keyPair.Private);
-				string responseString = Encoding.UTF8.GetString(eng.ProcessBlock(challengeBytes, 0, challengeBytes.Length));
-
+				string responseString = challengeBytes.Decrypt(_keyPair.Private);
+				
 				//Send original message back to client
 				this.Send(String.Format("CHALLENGERESPONSE: {0}", responseString));
 			}
