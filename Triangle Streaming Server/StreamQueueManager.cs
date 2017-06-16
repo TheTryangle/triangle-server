@@ -111,6 +111,15 @@ namespace Triangle_Streaming_Server
 			return ByteArrayToString(signBytes);
 		}
 
+		public static bool ValidateByets(byte[] bytesToValidate, byte[] signature, AsymmetricKeyParameter publicKey)
+		{
+			ISigner signer = SignerUtilities.GetSigner("SHA1withRSA");
+			signer.Init(false, publicKey);
+			signer.BlockUpdate(bytesToValidate, 0, bytesToValidate.Length);
+
+			return signer.VerifySignature(signature);
+		}
+
 		private string SignBytes(string stringToSign)
 		{
 			return SignBytes(Encoding.ASCII.GetBytes(stringToSign));

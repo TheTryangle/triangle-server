@@ -55,15 +55,9 @@ namespace Triangle_Streaming_Server
 					// probably public key
 					string signature = e.Data.Replace("HASH:", "");
 
-					var publicKey = StreamQueueManager.GetInstance().Streams[this.ID].PublicKey;
-					var encryptEngine = new Pkcs1Encoding(new RsaEngine());
-					encryptEngine.Init(false, publicKey);
+					byte[] decodedSignature = Convert.FromBase64String(signature);
 
-					byte[] signatureBytes = Encoding.UTF8.GetBytes(signature);
-
-					byte[] decryptedHash = encryptEngine.ProcessBlock(signatureBytes, 0, signatureBytes.Length);
-
-					StreamQueueManager.GetInstance().Streams[this.ID].LatestHash = decryptedHash;
+					StreamQueueManager.GetInstance().Streams[this.ID].LatestSignature = decodedSignature;
 					return;
 				}
 
@@ -74,11 +68,12 @@ namespace Triangle_Streaming_Server
 			{
 				// Received probably camera bytes
 				byte[] receivedBytes = e.RawData;
-				byte[] computedHash = _sha1.ComputeHash(receivedBytes);
-				byte[] latestHash = StreamQueueManager.GetInstance().Streams[this.ID].LatestHash;
+				byte[] latestSignature = StreamQueueManager.GetInstance().Streams[this.ID].LatestSignature;
+				AsymmetricKeyParameter publicKey = StreamQueueManager.GetInstance().Streams[this.ID].PublicKey;
 
+				bool validData = StreamQueueManager.ValidateByets(receivedBytes, latestSignature, publicKey);
 
-				if (computedHash == latestHash)
+				if (validData)
 				{
 					Console.WriteLine("Valid file");
 					// Valid file

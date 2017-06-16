@@ -25,7 +25,7 @@ namespace Triangle_Streaming_Server
 		public AsymmetricKeyParameter PublicKey { get; set; }
 
 		[JsonIgnore]
-		public byte[] LatestHash { get; set; }
+		public byte[] LatestSignature { get; set; }
 
 		public Stream(string clientID)
 		{
