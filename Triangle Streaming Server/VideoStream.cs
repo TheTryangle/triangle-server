@@ -1,7 +1,9 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
+using Org.BouncyCastle.Utilities.IO.Pem;
 using System;
 using System.IO;
 using System.Security.Cryptography;
@@ -38,8 +40,9 @@ namespace Triangle_Streaming_Server
 					// probably public key
 					string publicKey = e.Data.Replace("PUBKEY:", "");
 
-					byte[] publicKeyBytes = Encoding.UTF8.GetBytes(publicKey);
-					AsymmetricKeyParameter publicKeyParam = PublicKeyFactory.CreateKey(publicKeyBytes);
+					TextReader textReader = new StringReader(publicKey);
+					Org.BouncyCastle.OpenSsl.PemReader pemReader = new Org.BouncyCastle.OpenSsl.PemReader(textReader);
+					AsymmetricKeyParameter publicKeyParam = (AsymmetricKeyParameter)pemReader.ReadObject();
 
 					StreamQueueManager.GetInstance().Streams[this.ID].PublicKey = publicKeyParam;
 					return;
