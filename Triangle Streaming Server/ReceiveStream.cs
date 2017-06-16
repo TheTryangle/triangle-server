@@ -1,18 +1,12 @@
 ﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Encodings;
-using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 using System.Linq;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Configuration;
 
 namespace Triangle_Streaming_Server
@@ -20,7 +14,6 @@ namespace Triangle_Streaming_Server
 	public class ReceiveStream : WebSocketBehavior
 	{
 		private static AsymmetricCipherKeyPair _keyPair;
-		private static SHA1CryptoServiceProvider _sha1;
 
 		private static string _pubKey;
 
@@ -31,8 +24,6 @@ namespace Triangle_Streaming_Server
 
 		public static void Initialize()
 		{
-			_sha1 = new SHA1CryptoServiceProvider();
-
 			//Read privatekey.pem from executable directory
 			var path = ConfigurationManager.AppSettings["privateKeyPath"];
 			using (var reader = File.OpenText(path))

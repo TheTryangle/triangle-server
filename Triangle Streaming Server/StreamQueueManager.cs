@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
-using Org.BouncyCastle;
 using Org.BouncyCastle.Crypto;
 using System.IO;
 using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Crypto.Encodings;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Math;
-using System.Security.Cryptography;
-using Org.BouncyCastle.Security;
 using System.Linq;
 using System.Configuration;
+using Triangle_Streaming_Server.Extensions;
 
 namespace Triangle_Streaming_Server
 {
@@ -21,7 +14,6 @@ namespace Triangle_Streaming_Server
 	{
 		private static StreamQueueManager _instance;
 		private static AsymmetricCipherKeyPair _keyPair;
-		private static SHA1CryptoServiceProvider _sha1;
 
 		public static StreamQueueManager GetInstance()
 		{
@@ -41,8 +33,6 @@ namespace Triangle_Streaming_Server
 				_keyPair = (AsymmetricCipherKeyPair)new PemReader(reader).ReadObject();
 			}
 
-			_sha1 = new SHA1CryptoServiceProvider();
-
 			Streams = new Dictionary<string, Stream>();
 			RunCheckQueue();
 		}
@@ -50,7 +40,7 @@ namespace Triangle_Streaming_Server
 		public void AddToQueue(string ID, byte[] item)
 		{
 			var stream = Streams[ID];
-			if(stream == null)
+			if (stream == null)
 			{
 				stream = new Stream(ID);
 				Streams.Add(ID, stream);
@@ -68,7 +58,7 @@ namespace Triangle_Streaming_Server
 
 		private void T_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			foreach(Stream stream in Streams.Values.ToList()) //The ToList() call is to prevent modification from throwing exceptions.
+			foreach (Stream stream in Streams.Values.ToList()) //The ToList() call is to prevent modification from throwing exceptions.
 			{
 				if (stream.VideoQueue.Count > 0)
 				{
@@ -88,7 +78,8 @@ namespace Triangle_Streaming_Server
 					//Every 5 video fragments, sign a fragment.
 					if (stream.FragmentCount >= 5)
 					{
-						string encryptedHash = SignBytes(Convert.ToBase64String(nextVideo));
+						string base64 = Convert.ToBase64String(nextVideo);
+						string encryptedHash = base64.Sign(_keyPair.Private);
 						foreach (string client in receivingClients)
 						{
 							WebSocketManager.GetInstance().Server.WebSocketServices["/receive"].Sessions.SendTo("SIGN: " + encryptedHash, client);
@@ -99,49 +90,6 @@ namespace Triangle_Streaming_Server
 					stream.FragmentCount += 1;
 				}
 			}
-		}
-
-		private string SignBytes(byte[] bytesToSign)
-		{
-			ISigner signer = SignerUtilities.GetSigner("SHA1withRSA");
-			signer.Init(true, _keyPair.Private);
-			signer.BlockUpdate(bytesToSign, 0, bytesToSign.Length);
-			byte[] signBytes = signer.GenerateSignature();
-
-			return ByteArrayToString(signBytes);
-		}
-
-		public static bool ValidateByets(byte[] bytesToValidate, byte[] signature, AsymmetricKeyParameter publicKey)
-		{
-			ISigner signer = SignerUtilities.GetSigner("SHA1withRSA");
-			signer.Init(false, publicKey);
-			signer.BlockUpdate(bytesToValidate, 0, bytesToValidate.Length);
-
-			return signer.VerifySignature(signature);
-		}
-
-		private string SignBytes(string stringToSign)
-		{
-			return SignBytes(Encoding.ASCII.GetBytes(stringToSign));
-		}
-
-		private string EncryptHashBytes(byte[] bytesToHash)
-		{
-			var hash = _sha1.ComputeHash(bytesToHash);
-
-			var encryptEngine = new Pkcs1Encoding(new RsaEngine());
-
-			encryptEngine.Init(true, _keyPair.Private);
-
-			return Convert.ToBase64String(encryptEngine.ProcessBlock(hash, 0, hash.Length));
-		}
-
-		private string ByteArrayToString(byte[] ba)
-		{
-			StringBuilder hex = new StringBuilder(ba.Length * 2);
-			foreach (byte b in ba)
-				hex.AppendFormat("{0:x2}", b);
-			return hex.ToString();
 		}
 	}
 }

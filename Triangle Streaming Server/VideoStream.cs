@@ -1,13 +1,7 @@
 ﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Encodings;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities.IO.Pem;
 using System;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
+using Triangle_Streaming_Server.Extensions;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
@@ -15,12 +9,10 @@ namespace Triangle_Streaming_Server
 {
 	public class VideoStream : WebSocketBehavior
 	{
-		private static SHA1CryptoServiceProvider _sha1;
-
 		protected override void OnOpen()
 		{
 			Console.WriteLine($"Someone connected to send, {this.Context.UserEndPoint.ToString()}");
-			Console.WriteLine("Their ID is {0}", this.ID);
+			Console.WriteLine($"Their ID is {this.ID}");
 
 			Send("PUBKEY");
 
@@ -29,14 +21,11 @@ namespace Triangle_Streaming_Server
 
 		protected override void OnMessage(MessageEventArgs e)
 		{
-			Console.WriteLine("Received data on server");
-			// this.ID can be used for uniquely identifying sessions 
-
 			if (e.IsText)
 			{
 				if (e.Data.StartsWith("PUBKEY:"))
 				{
-					Console.WriteLine("Received public key");
+					Console.WriteLine($"{ID}: Received public key");
 					// probably public key
 					string publicKey = e.Data.Replace("PUBKEY:", "");
 
@@ -50,7 +39,7 @@ namespace Triangle_Streaming_Server
 
 				if (e.Data.StartsWith("HASH:"))
 				{
-					Console.WriteLine("Received hash");
+					Console.WriteLine($"{ID}: Received hash");
 
 					// probably public key
 					string signature = e.Data.Replace("HASH:", "");
@@ -71,22 +60,22 @@ namespace Triangle_Streaming_Server
 				byte[] latestSignature = StreamQueueManager.GetInstance().Streams[this.ID].LatestSignature;
 				AsymmetricKeyParameter publicKey = StreamQueueManager.GetInstance().Streams[this.ID].PublicKey;
 
-				bool validData = StreamQueueManager.ValidateByets(receivedBytes, latestSignature, publicKey);
+				bool validData = receivedBytes.Validate(latestSignature, publicKey);
 
 				if (validData)
 				{
-					Console.WriteLine("Valid file");
+					Console.WriteLine($"{ID}: Data is valid.");
 					// Valid file
 					StreamQueueManager.GetInstance().AddToQueue(this.ID, receivedBytes);
 				}
 				else
 				{
-					Console.WriteLine("Invalid file received!");
+					Console.WriteLine($"{ID}: Data has been tampered with!");
 				}
 			}
 			else
 			{
-				Console.WriteLine("Ignoring received data");
+				Console.WriteLine($"{ID}: Ignoring the received data");
 			}
 		}
 
