@@ -9,15 +9,25 @@ namespace Triangle_Streaming_Server.WebApi
 {
     public class StreamController : ApiController
     {
-        // GET api/values 
+        // Test GET
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };
         }
-        
-        public void Send(int id, byte[] data)
-        {
 
+        [HttpGet]
+        public Guid Connect()
+        {
+            Guid identity = Guid.NewGuid();
+            StreamQueueManager.GetInstance().Streams.Add(identity.ToString(), new Stream(identity.ToString()));
+            return identity;
+        }
+        
+        [HttpPut]
+        public async void Send(Guid id)
+        {
+            byte[] data = await Request.Content.ReadAsByteArrayAsync();
+            StreamQueueManager.GetInstance().AddToQueue(id.ToString(), data);
         }
     }
 }
