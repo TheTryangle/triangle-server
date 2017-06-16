@@ -1,26 +1,20 @@
 ﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Encodings;
-using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 using System.Linq;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Configuration;
+using Triangle_Streaming_Server.Extensions;
 
 namespace Triangle_Streaming_Server
 {
 	public class ReceiveStream : WebSocketBehavior
 	{
 		private static AsymmetricCipherKeyPair _keyPair;
-		private static SHA1CryptoServiceProvider _sha1;
 
 		private static string _pubKey;
 
@@ -31,8 +25,6 @@ namespace Triangle_Streaming_Server
 
 		public static void Initialize()
 		{
-			_sha1 = new SHA1CryptoServiceProvider();
-
 			//Read privatekey.pem from executable directory
 			var path = ConfigurationManager.AppSettings["privateKeyPath"];
 			using (var reader = File.OpenText(path))
@@ -80,10 +72,8 @@ namespace Triangle_Streaming_Server
 				byte[] challengeBytes = Convert.FromBase64String(challengeString);
 
 				//Decrypt bytes into string
-				IAsymmetricBlockCipher eng = new Pkcs1Encoding(new RsaEngine());
-				eng.Init(false, _keyPair.Private);
-				string responseString = Encoding.UTF8.GetString(eng.ProcessBlock(challengeBytes, 0, challengeBytes.Length));
-
+				string responseString = challengeBytes.Decrypt(_keyPair.Private);
+				
 				//Send original message back to client
 				this.Send(String.Format("CHALLENGERESPONSE: {0}", responseString));
 			}
