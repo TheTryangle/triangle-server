@@ -1,5 +1,5 @@
 # Create publish artifact
-dotnet publish -c Release "~/Triangle Streaming Server/TriangleStreamingServer.csproj"
+dotnet publish -c Release "Triangle Streaming Server/TriangleStreamingServer.csproj"
 
 printf 'Zipping files'
 #Zip the files
