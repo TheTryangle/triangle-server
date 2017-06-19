@@ -3,7 +3,7 @@ dotnet publish -c Release "Triangle Streaming Server/TriangleStreamingServer.csp
 
 printf 'Zipping files'
 #Zip the files
-tar -zcvf package.tgz "Triangle Streaming Server/bin/Release/netcoreapp1.1/publishsrc/bin/Release/netcoreapp1.0/publish/"
+tar -zcvf package.tgz "Triangle Streaming Server/bin/Release/netcoreapp1.1/publish/"
 printf 'done zipping files'
 printf 'sending file to deploy'
 export SSHPASS=$DEPLOY_PASS
