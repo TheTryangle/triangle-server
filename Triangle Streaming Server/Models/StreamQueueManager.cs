@@ -14,6 +14,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TriangleStreamingServer.Extensions;
 using TriangleStreamingServer.WebSockets;
 
 namespace TriangleStreamingServer.Models
@@ -99,7 +100,8 @@ namespace TriangleStreamingServer.Models
 						//Every 5 video fragments, sign a fragment.
 						if (stream.FragmentCount >= 5)
 						{
-							string encryptedHash = SignBytes(Convert.ToBase64String(nextVideo));
+							string base64 = Convert.ToBase64String(nextVideo);
+							string encryptedHash = base64.Sign(_keyPair.Private);
 
 							await ReceivingWebSocket.Send($"SIGN: {encryptedHash}", receivingClients.ToArray());
 							stream.FragmentCount = 0;
@@ -112,40 +114,6 @@ namespace TriangleStreamingServer.Models
 			{
 				Console.WriteLine(ex.ToString());
 			}
-		}
-
-		private string SignBytes(byte[] bytesToSign)
-		{
-			ISigner signer = SignerUtilities.GetSigner("SHA1withRSA");
-			signer.Init(true, _keyPair.Private);
-			signer.BlockUpdate(bytesToSign, 0, bytesToSign.Length);
-			byte[] signBytes = signer.GenerateSignature();
-
-			return ByteArrayToString(signBytes);
-		}
-
-		private string SignBytes(string stringToSign)
-		{
-			return SignBytes(Encoding.ASCII.GetBytes(stringToSign));
-		}
-
-		private string EncryptHashBytes(byte[] bytesToHash)
-		{
-			var hash = _sha1.ComputeHash(bytesToHash);
-
-			var encryptEngine = new Pkcs1Encoding(new RsaEngine());
-
-			encryptEngine.Init(true, _keyPair.Private);
-
-			return Convert.ToBase64String(encryptEngine.ProcessBlock(hash, 0, hash.Length));
-		}
-
-		private string ByteArrayToString(byte[] ba)
-		{
-			StringBuilder hex = new StringBuilder(ba.Length * 2);
-			foreach (byte b in ba)
-				hex.AppendFormat("{0:x2}", b);
-			return hex.ToString();
 		}
 	}
 }
