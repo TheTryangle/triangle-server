@@ -9,7 +9,11 @@ env:
 script:
   - dotnet restore
   - dotnet build
-  - dotnet publish -c Release
+addons:
+    apt:
+        packages:
+            - sshpass
 deploy:
-  on:
-    dotnet publish -c Release
+  - provider: script
+    skip_cleanup: true
+    script: ./scripts/deploy.sh
