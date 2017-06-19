@@ -31,7 +31,7 @@ namespace TriangleStreamingServer.WebSockets
 
 			await Receive(socket, async (result, buffer) =>
 			{
-				if (socket.CloseStatus != null)
+				if (socket.State == WebSocketState.Aborted || socket.State == WebSocketState.Closed|| socket.State == WebSocketState.CloseReceived)
 				{
 					await _webSocketHandler.OnDisconnected(socket);
 					return;
