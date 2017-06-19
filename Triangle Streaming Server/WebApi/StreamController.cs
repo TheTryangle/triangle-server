@@ -27,22 +27,9 @@ namespace Triangle_Streaming_Server.WebApi
         [HttpPut]
         public async Task<IHttpActionResult> Send(Guid id)
         {
-            var provider = new MultipartMemoryStreamProvider();
-
-            await Request.Content.ReadAsMultipartAsync(provider);
-
-            if (provider.Contents.Count == 0) return InternalServerError(new Exception("Upload failed"));
-
-            var file = provider.Contents[0]; // if you handle more then 1 file you can loop provider.Contents
-
-            var buffer = await file.ReadAsByteArrayAsync();
-
-            // .. do whatever needed here
-            StreamQueueManager.GetInstance().AddToQueue(id.ToString(), buffer);
-
-
+            var file = await Request.Content.ReadAsByteArrayAsync();
+            StreamQueueManager.GetInstance().AddToQueue(id.ToString(), file);
             return Ok();
-
         }
     }
 }
