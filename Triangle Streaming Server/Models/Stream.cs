@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Org.BouncyCastle.Crypto;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
-namespace Triangle_Streaming_Server
+namespace TriangleStreamingServer.Models
 {
 	public class Stream
 	{
@@ -19,6 +19,12 @@ namespace Triangle_Streaming_Server
 
 		[JsonIgnore]
 		public int FragmentCount { get; set; }
+
+		[JsonIgnore]
+		public AsymmetricKeyParameter PublicKey { get; set; }
+
+		[JsonIgnore]
+		public byte[] LatestSignature { get; set; }
 
 		public Stream(string clientID)
 		{

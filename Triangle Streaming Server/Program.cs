@@ -1,18 +1,27 @@
 ﻿using System;
-using Microsoft.Owin.Hosting;
-using Triangle_Streaming_Server.WebApi;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
-namespace Triangle_Streaming_Server
+namespace TriangleStreamingServer
 {
-	class Program
-	{
-		static void Main(string[] args)
-		{
-            string baseAddressWebApi = "http://145.49.44.137:9000/";
-            WebSocketManager webManager = WebSocketManager.GetInstance();
-            WebApp.Start<WebApiStart>(baseAddressWebApi);
-            Console.WriteLine("Press any key to close server.");
-            Console.ReadKey();                  
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+				.UseUrls("http://0.0.0.0:5000")
+				.UseIISIntegration()
+                .UseStartup<Startup>()
+                .UseApplicationInsights()
+                .Build();
+
+            host.Run();
         }
-	}
+    }
 }
