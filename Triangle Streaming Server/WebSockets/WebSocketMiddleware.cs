@@ -31,6 +31,12 @@ namespace TriangleStreamingServer.WebSockets
 
 			await Receive(socket, async (result, buffer) =>
 			{
+				if (socket.CloseStatus != null)
+				{
+					await _webSocketHandler.OnDisconnected(socket);
+					return;
+				}
+
 				if (result.MessageType == WebSocketMessageType.Text || result.MessageType == WebSocketMessageType.Binary)
 				{
 					await _webSocketHandler.OnMessage(socket, result, result.MessageType, buffer);
