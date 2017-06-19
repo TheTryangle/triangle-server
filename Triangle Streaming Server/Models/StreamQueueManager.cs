@@ -20,6 +20,9 @@ namespace TriangleStreamingServer.Models
 {
 	public class StreamQueueManager
 	{
+		//Default Windows exit code for a file not being found.
+		private const int FILE_NOT_FOUND = 2;
+
 		private static StreamQueueManager _instance;
 		private AsymmetricCipherKeyPair _keyPair;
 		private SHA1 _sha1;
@@ -35,9 +38,18 @@ namespace TriangleStreamingServer.Models
 				.AddEnvironmentVariables();
 			var config = builder.Build();
 			var path = config["path:privateKey"];
-			using (var reader = File.OpenText(path))
+
+			try
 			{
-				_keyPair = (AsymmetricCipherKeyPair)new PemReader(reader).ReadObject();
+				using (var reader = File.OpenText(path))
+				{
+					_keyPair = (AsymmetricCipherKeyPair)new PemReader(reader).ReadObject();
+				}
+			}
+			catch(FileNotFoundException e)
+			{
+				Console.WriteLine("Private key file not found at {0}! Please check application config and private key file.", path);
+				Environment.Exit(FILE_NOT_FOUND);
 			}
 
 			_sha1 = SHA1.Create();
