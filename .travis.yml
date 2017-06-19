@@ -14,9 +14,9 @@ addons:
         packages:
             - sshpass
 after_success:
-  - ./scripts/deploy.sh
+  - scripts/deploy.sh
 deploy:
   - provider: script
     skip_cleanup: true
-    script: ./scripts/deploy.sh
+    script: scripts/deploy.sh
     all_branches: true
