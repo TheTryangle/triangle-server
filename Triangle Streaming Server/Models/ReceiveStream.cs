@@ -12,6 +12,7 @@ using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using TriangleStreamingServer.Extensions;
 using TriangleStreamingServer.WebSockets;
 
 namespace TriangleStreamingServer.Models
@@ -19,7 +20,6 @@ namespace TriangleStreamingServer.Models
 	public class ReceiveStream : WebSockets.WebSocketHandler
 	{
 		private static AsymmetricCipherKeyPair _keyPair;
-		private static SHA1 _sha1;
 
 		private static string _pubKey;
 
@@ -28,8 +28,6 @@ namespace TriangleStreamingServer.Models
 
 		public ReceiveStream(WebSocketConnectionManager webSocketConnectionManager, StreamQueueManager streamManager) : base(webSocketConnectionManager, streamManager)
 		{
-			_sha1 = SHA1.Create();
-
 			var builder = new ConfigurationBuilder()
 				.SetBasePath(Directory.GetCurrentDirectory())
 				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -109,9 +107,7 @@ namespace TriangleStreamingServer.Models
 				byte[] challengeBytes = Convert.FromBase64String(challengeString);
 
 				//Decrypt bytes into string
-				IAsymmetricBlockCipher eng = new Pkcs1Encoding(new RsaEngine());
-				eng.Init(false, _keyPair.Private);
-				string responseString = Encoding.UTF8.GetString(eng.ProcessBlock(challengeBytes, 0, challengeBytes.Length));
+				string responseString = challengeBytes.Decrypt(_keyPair.Private);
 
 				//Send original message back to client
 				await this.Send(socket, $"CHALLENGERESPONSE: {responseString}");

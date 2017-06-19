@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Org.BouncyCastle.Crypto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,12 @@ namespace TriangleStreamingServer.Models
 
 		[JsonIgnore]
 		public int FragmentCount { get; set; }
+
+		[JsonIgnore]
+		public AsymmetricKeyParameter PublicKey { get; set; }
+
+		[JsonIgnore]
+		public byte[] LatestSignature { get; set; }
 
 		public Stream(string clientID)
 		{
