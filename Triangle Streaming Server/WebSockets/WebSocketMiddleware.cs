@@ -57,9 +57,9 @@ namespace TriangleStreamingServer.WebSockets
 					WebSocketReceiveResult result;
 					do
 					{
-						result = await socket.ReceiveAsync(buffer, cancellationToken: CancellationToken.None);
+						result = await socket.ReceiveAsync(buffer, CancellationToken.None);
 
-						ms.Write(buffer.Array, buffer.Offset, buffer.Count);
+						ms.Write(buffer.Array, buffer.Offset, result.Count);
 					} while (!result.EndOfMessage);
 
 					ms.Seek(0, SeekOrigin.Begin);
