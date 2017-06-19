@@ -1,9 +1,9 @@
 # Create publish artifact
-dotnet publish -c Release src
+dotnet publish -c Release "~/Triangle Streaming Server/TriangleStreamingServer.csproj"
 
 printf 'Zipping files'
 #Zip the files
-tar -zcvf package.tgz src/bin/Release/netcoreapp1.0/publish/
+tar -zcvf package.tgz "Triangle Streaming Server/bin/Release/netcoreapp1.1/publishsrc/bin/Release/netcoreapp1.0/publish/"
 printf 'done zipping files'
 printf 'sending file to deploy'
 export SSHPASS=$DEPLOY_PASS
