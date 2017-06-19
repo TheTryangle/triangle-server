@@ -48,7 +48,7 @@ namespace TriangleStreamingServer
 
 			var webSocketOptions = new WebSocketOptions()
 			{
-				KeepAliveInterval = TimeSpan.FromSeconds(120),
+				KeepAliveInterval = TimeSpan.FromSeconds(10),
 				ReceiveBufferSize = 4 * 1024
 			};
 

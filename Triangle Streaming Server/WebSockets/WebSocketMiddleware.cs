@@ -29,27 +29,34 @@ namespace TriangleStreamingServer.WebSockets
 			var socket = await context.WebSockets.AcceptWebSocketAsync();
 			await _webSocketHandler.OnConnected(socket);
 
-			await Receive(socket, async (result, buffer) =>
+			try
 			{
-				if (socket.State == WebSocketState.Aborted || socket.State == WebSocketState.Closed|| socket.State == WebSocketState.CloseReceived)
+				await Receive(socket, async (result, buffer) =>
 				{
-					await _webSocketHandler.OnDisconnected(socket);
-					return;
-				}
+					if (socket.State == WebSocketState.Aborted || socket.State == WebSocketState.Closed || socket.State == WebSocketState.CloseReceived)
+					{
+						await _webSocketHandler.OnDisconnected(socket);
+						return;
+					}
 
-				if (result.MessageType == WebSocketMessageType.Text || result.MessageType == WebSocketMessageType.Binary)
-				{
-					await _webSocketHandler.OnMessage(socket, result, result.MessageType, buffer);
-					return;
-				}
+					if (result.MessageType == WebSocketMessageType.Text || result.MessageType == WebSocketMessageType.Binary)
+					{
+						await _webSocketHandler.OnMessage(socket, result, result.MessageType, buffer);
+						return;
+					}
 
-				else if (result.MessageType == WebSocketMessageType.Close)
-				{
-					await _webSocketHandler.OnDisconnected(socket);
-					return;
-				}
+					else if (result.MessageType == WebSocketMessageType.Close)
+					{
+						await _webSocketHandler.OnDisconnected(socket);
+						return;
+					}
 
-			});
+				});
+			}
+			catch(IOException e)
+			{
+				await _webSocketHandler.OnDisconnected(socket);
+			}
 		}
 
 		private async Task Receive(WebSocket socket, Action<WebSocketReceiveResult, byte[]> handleMessage)
