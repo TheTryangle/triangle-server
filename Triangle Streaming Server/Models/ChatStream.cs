@@ -52,20 +52,39 @@ namespace TriangleStreamingServer.Models
 			string id = WebSocketConnectionManager.GetId(socket);
 			Console.WriteLine(data);
 
-			ChatMessage sendMessage = JsonConvert.DeserializeObject<ChatMessage>(data);
-			if (!Clients.ContainsKey(id))
-			{
-				// Not chatting
-				Clients.TryAdd(id, new List<string> { sendMessage.StreamId });
-			}
-			else
-			{
-				Clients[id].Add(sendMessage.StreamId);
-			}
+			ChatAction sendMessage = JsonConvert.DeserializeObject<ChatAction>(data);
 
-
-			var _list = Clients.Where(p => p.Value.Contains(sendMessage.StreamId) && p.Key != id).Select(p => p.Key).ToArray();
-			await SendToAll(data, _list);
+			switch (sendMessage.ActionType)
+			{
+				case ChatAction.Type.JOIN:
+					{
+						if (!Clients.ContainsKey(id))
+						{
+							// Not chatting
+							Clients.TryAdd(id, new List<string> { sendMessage.StreamId });
+						}
+						else
+						{
+							Clients[id].Add(sendMessage.StreamId);
+						}
+						break;
+					}
+				case ChatAction.Type.LEAVE:
+					{
+						Clients[id].Remove(sendMessage.StreamId);
+						break;
+					}
+				case ChatAction.Type.MESSAGE:
+					{
+						var _list = Clients.Where(p => p.Value.Contains(sendMessage.StreamId) && p.Key != id).Select(p => p.Key).ToArray();
+						await SendToAll(data, _list);
+						break;
+					}
+				default:
+					{
+						throw new NotImplementedException("Type has not yet been implemented!");
+					}
+			}
 		}
 	}
 }
