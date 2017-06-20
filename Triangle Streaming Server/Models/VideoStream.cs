@@ -82,10 +82,17 @@ namespace TriangleStreamingServer.Models
 							StreamManager.Streams[socketId].LatestSignature = decodedSignature;
 							return;
 						}
-                        else if (data.StartsWith("USERLIST:"))
+                        else if (data.StartsWith("USERLIST"))
                         {
                             //Send a list of user of the stream
                             await this.Send(JsonConvert.SerializeObject(ReceiveStream.GetUserListPerStreamer(socketId)));
+                        }
+
+                        else if (data.StartsWith("VIEWERCOUNT"))
+                        {
+                            //Get the amount of viewers for this stream
+                            await this.Send(String.Format("VIEWERCOUNT: {0}", ReceiveStream.GetViewerAmountByStream(socketId)));
+
                         }
 
                         break;

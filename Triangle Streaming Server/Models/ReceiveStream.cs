@@ -146,8 +146,16 @@ namespace TriangleStreamingServer.Models
             return (from pr in Clients
                     where pr.Value == SteamerID
                     group pr.Key by pr.Value
-                                                into g
-                    select g);
+                    into g select g);
         }
+        
+        public static int GetViewerAmountByStream(string clientID)
+        {
+            return Clients
+                .Where(pair => pair.Value == clientID)
+                .Select(pair => pair.Key)
+                .Count();
+        }
+
     }
 }
