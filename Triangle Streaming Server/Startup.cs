@@ -56,10 +56,12 @@ namespace TriangleStreamingServer
 
 			var streamQueueManager = app.ApplicationServices.GetService<StreamQueueManager>();
 			var receiveStream = app.ApplicationServices.GetService<ReceiveStream>();
-			streamQueueManager.ReceivingWebSocket = receiveStream;
+            var chatStream = app.ApplicationServices.GetService<ChatStream>();
+            streamQueueManager.ReceivingWebSocket = receiveStream;
 
 			app.MapWebSocketManager("/send", app.ApplicationServices.GetService<VideoStream>());
 			app.MapWebSocketManager("/receive", receiveStream);
-		}
+            app.MapWebSocketManager("/chat", chatStream);
+        }
 	}
 }
