@@ -89,7 +89,7 @@ namespace TriangleStreamingServer.Models
 
 							try
 							{
-								//Extract stream title and streamer name from JSON, and put it into the streamer's Stream object.
+								//Extract streamer name from JSON, and put it into the streamer's Stream object.
 								var streamInfo = JsonConvert.DeserializeAnonymousType(data, streamInfoDefinition);
 								StreamManager.Streams[socketId].StreamerName = streamInfo.StreamerName;
 							}
