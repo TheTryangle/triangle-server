@@ -18,9 +18,6 @@ namespace TriangleStreamingServer.Models
 		public Queue<byte[]> VideoQueue { get; private set; }
 
 		[JsonIgnore]
-		public int FragmentCount { get; set; }
-
-		[JsonIgnore]
 		public AsymmetricKeyParameter PublicKey { get; set; }
 
 		[JsonIgnore]

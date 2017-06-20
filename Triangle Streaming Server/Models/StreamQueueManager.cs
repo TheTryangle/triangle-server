@@ -97,16 +97,11 @@ namespace TriangleStreamingServer.Models
 
 						await ReceivingWebSocket.Send(nextVideo, receivingClients.ToArray());
 
-						//Every 5 video fragments, sign a fragment.
-						if (stream.FragmentCount >= 5)
-						{
-							string base64 = Convert.ToBase64String(nextVideo);
-							string encryptedHash = base64.Sign(_keyPair.Private);
+						//Sign video fragment.
+						string base64 = Convert.ToBase64String(nextVideo);
+						string encryptedHash = base64.Sign(_keyPair.Private);
 
-							await ReceivingWebSocket.Send($"SIGN: {encryptedHash}", receivingClients.ToArray());
-							stream.FragmentCount = 0;
-						}
-						stream.FragmentCount += 1;
+						await ReceivingWebSocket.Send($"SIGN: {encryptedHash}", receivingClients.ToArray());
 					}
 				}
 			}
