@@ -8,7 +8,7 @@ namespace TriangleStreamingServer.Models
 	{
 		public string StreamId { get; set; }
 
-		[JsonConverter(typeof(MicrosecondEpochConverter))]
+		[JsonConverter(typeof(DateTimeEpochConverter))]
 		public DateTime Timestamp { get; set; }
 		public string Message { get; set; }
 		public Type ActionType { get; set; }

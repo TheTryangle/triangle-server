@@ -53,6 +53,7 @@ namespace TriangleStreamingServer.Models
 			Console.WriteLine(data);
 
 			ChatAction sendMessage = JsonConvert.DeserializeObject<ChatAction>(data);
+            Console.WriteLine(sendMessage);
 
 			switch (sendMessage.ActionType)
 			{
