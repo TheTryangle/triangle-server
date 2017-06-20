@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Crypto;
+﻿using Newtonsoft.Json;
+using Org.BouncyCastle.Crypto;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -81,8 +82,20 @@ namespace TriangleStreamingServer.Models
 							StreamManager.Streams[socketId].LatestSignature = decodedSignature;
 							return;
 						}
+                        else if (data.StartsWith("USERLIST"))
+                        {
+                            //Send a list of user of the stream
+                            await this.Send(JsonConvert.SerializeObject(ReceiveStream.GetUserListPerStreamer(socketId)));
+                        }
 
-						break;
+                        else if (data.StartsWith("VIEWERCOUNT"))
+                        {
+                            //Get the amount of viewers for this stream
+                            await this.Send(String.Format("VIEWERCOUNT: {0}", ReceiveStream.GetViewerAmountByStream(socketId)));
+
+                        }
+
+                        break;
 					}
 				default:
 					{

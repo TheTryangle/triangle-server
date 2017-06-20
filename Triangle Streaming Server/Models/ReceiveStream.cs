@@ -62,7 +62,7 @@ namespace TriangleStreamingServer.Models
 		//A dictionary which keeps track of which clients are watching which streams.
 		//Key is client session ID, value is stream ID.
 		//TODO: optimize. Searching on value is O(n).
-		public Dictionary<string, string> Clients { get; private set; }
+		public static Dictionary<string, string> Clients { get; private set; }
 
 		public override async Task OnConnected(WebSocket socket)
 		{
@@ -140,5 +140,22 @@ namespace TriangleStreamingServer.Models
 			Clients.Remove(id);
 			return base.OnDisconnected(socket);
 		}
-	}
+
+        public static Object GetUserListPerStreamer(string SteamerID)
+        {
+            return (from pr in Clients
+                    where pr.Value == SteamerID
+                    group pr.Key by pr.Value
+                    into g select g);
+        }
+        
+        public static int GetViewerAmountByStream(string clientID)
+        {
+            return Clients
+                .Where(pair => pair.Value == clientID)
+                .Select(pair => pair.Key)
+                .Count();
+        }
+
+    }
 }
