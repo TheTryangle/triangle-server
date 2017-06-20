@@ -16,12 +16,14 @@ namespace TriangleStreamingServer.Models
     {
         private static string _name;
 
-        public static Dictionary<string, string> Clients { get; private set; }
+        
 
         public ChatStream(WebSocketConnectionManager webSocketConnectionManager, StreamQueueManager streamManager) : base(webSocketConnectionManager, streamManager)
         {
-
+            Clients = new Dictionary<string, string>();
         }
+
+        public static Dictionary<string, string> Clients { get; private set; }
 
         public override async Task OnConnected(WebSocket socket)
         {
@@ -57,9 +59,18 @@ namespace TriangleStreamingServer.Models
                 //Get data from json
                 var json = data.Replace("JOIN ", "");
                 var jsonData = (JObject)JsonConvert.DeserializeObject(json);
-                //_name = jsonData["name"].ToString();
+                string streamid = jsonData["StreamID"].ToString();
 
-                await SendToAll(json, WebSocketConnectionManager.GetAll().Keys.ToArray());
+                if (Clients.ContainsKey(id))
+                {
+                    Clients.Remove(id);
+                }
+
+                Clients.Add(id, streamid);
+
+                var _list = Clients.Where(p => p.Value == streamid).Select(p => p.Key).ToArray();
+                //await SendToAll(json, WebSocketConnectionManager.GetAll().Keys.ToArray());
+                await SendToAll(json, _list);
             }
             else if (data.StartsWith("NAME"))
             {
