@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TriangleStreamingServer.Extensions;
 using TriangleStreamingServer.WebSockets;
+using Newtonsoft.Json;
 
 namespace TriangleStreamingServer.Models
 {
@@ -80,6 +81,22 @@ namespace TriangleStreamingServer.Models
 
 							StreamManager.Streams[socketId].LatestSignature = decodedSignature;
 							return;
+						}
+						else if(data.StartsWith("{") && data.EndsWith("}"))
+						{
+							//The definition for the expected JSON object.
+							var streamInfoDefinition = new { StreamerName = "" };
+
+							try
+							{
+								//Extract stream title and streamer name from JSON, and put it into the streamer's Stream object.
+								var streamInfo = JsonConvert.DeserializeAnonymousType(data, streamInfoDefinition);
+								StreamManager.Streams[socketId].StreamerName = streamInfo.StreamerName;
+							}
+							catch(JsonReaderException e)
+							{
+								Console.WriteLine("Received invalid JSON: {0}", data);
+							}
 						}
 
 						break;
