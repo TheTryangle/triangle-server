@@ -58,7 +58,7 @@ namespace TriangleStreamingServer
 
 			app.MapWebSocketManager("/send", app.ApplicationServices.GetService<VideoStream>());
 			app.MapWebSocketManager("/receive", receiveStream);
-
+            
             app.UseMvc();
         }
 	}

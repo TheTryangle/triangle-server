@@ -16,12 +16,11 @@ namespace TriangleStreamingServer.Controllers
     //[Route("api/Stream")]
     public class StreamController : Controller
     {
-        private static StreamQueueManager streamQueueManager;
+        private StreamQueueManager streamQueueManager;
 
-        public StreamController()
+        public StreamController(StreamQueueManager streamQueueManager)
         {
-            if (streamQueueManager == null)
-                streamQueueManager = new StreamQueueManager();
+            this.streamQueueManager = streamQueueManager;
         }
 
         [HttpGet]
