@@ -1,10 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using TriangleStreamingServer.Converters;
 
 namespace TriangleStreamingServer.Models
 {
 	public class ChatAction
 	{
 		public string StreamId { get; set; }
+
+		[JsonConverter(typeof(MicrosecondEpochConverter))]
 		public DateTime Timestamp { get; set; }
 		public string Message { get; set; }
 		public Type ActionType { get; set; }
