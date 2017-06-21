@@ -59,8 +59,8 @@ namespace TriangleStreamingServer.Models
 						string data = Encoding.UTF8.GetString(buffer).Trim('\0');
 						if (data.StartsWith("PUBKEY:"))
 						{
-							Console.WriteLine($"{socketId}: Received public key");
-							// probably public key
+							Console.WriteLine($"{socketId}: Received public PublicKeyModel");
+							// probably public PublicKeyModel
 							string publicKey = data.Replace("PUBKEY:", "");
 
 							TextReader textReader = new StringReader(publicKey);
@@ -74,7 +74,7 @@ namespace TriangleStreamingServer.Models
 						{
 							Console.WriteLine($"{socketId}: Received hash");
 
-							// probably public key
+							// probably public PublicKeyModel
 							string signature = data.Replace("HASH:", "");
 
 							byte[] decodedSignature = Convert.FromBase64String(signature);

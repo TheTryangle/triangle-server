@@ -9,50 +9,49 @@ using Org.BouncyCastle.Crypto;
 
 namespace TriangleStreamingServer.Controllers
 {
-    //[Produces("application/json")]
-    [Route("api/Stream")]
-    public class StreamController : Controller
-    {
-        private StreamQueueManager streamQueueManager;
+	[Route("api/Stream")]
+	public class StreamController : Controller
+	{
+		private StreamQueueManager streamQueueManager;
 
-        public StreamController(StreamQueueManager streamQueueManager)
-        {
-            this.streamQueueManager = streamQueueManager;
-        }
+		public StreamController(StreamQueueManager streamQueueManager)
+		{
+			this.streamQueueManager = streamQueueManager;
+		}
 
-        [HttpGet]
-        [Route("Connect")]
-        public Guid Connect()
-        {
-            Guid identity = Guid.NewGuid();            
-            streamQueueManager.Streams.TryAdd(identity.ToString(), new Models.Stream(identity.ToString()));
-            return identity;
-        }
+		[HttpGet]
+		[Route("Connect")]
+		public Guid Connect()
+		{
+			Guid identity = Guid.NewGuid();
+			streamQueueManager.Streams.TryAdd(identity.ToString(), new Models.Stream(identity.ToString()));
+			return identity;
+		}
 
-        [HttpPut]
-        [Route("SendKey/{id?}")]        
-        public IActionResult SendKey(Guid id, [FromBody]key publicKey)
-        {            
-            TextReader textReader = new StringReader(publicKey.PublicKey);
-            Org.BouncyCastle.OpenSsl.PemReader pemReader = new Org.BouncyCastle.OpenSsl.PemReader(textReader);
-            AsymmetricKeyParameter publicKeyParam = (AsymmetricKeyParameter)pemReader.ReadObject();
-            streamQueueManager.Streams[id.ToString()].PublicKey = publicKeyParam;
-            return Ok();
-        }
+		[HttpPut]
+		[Route("SendKey/{id?}")]
+		public IActionResult SendKey(Guid id, [FromBody]PublicKeyModel publicKey)
+		{
+			TextReader textReader = new StringReader(publicKey.PublicKey);
+			Org.BouncyCastle.OpenSsl.PemReader pemReader = new Org.BouncyCastle.OpenSsl.PemReader(textReader);
+			AsymmetricKeyParameter publicKeyParam = (AsymmetricKeyParameter)pemReader.ReadObject();
+			streamQueueManager.Streams[id.ToString()].PublicKey = publicKeyParam;
+			return Ok();
+		}
 
-        [HttpPut]
-        [Route("Send/{id?}")]
-        public async Task<IActionResult> Send(Guid id)
-        {
-            StreamContent sc = new StreamContent(HttpContext.Request.Body);
-            var result = await sc.ReadAsByteArrayAsync();  
-            streamQueueManager.AddToQueue(id.ToString(), result);
-            return Ok();
-        }
+		[HttpPut]
+		[Route("Send/{id?}")]
+		public async Task<IActionResult> Send(Guid id)
+		{
+			StreamContent sc = new StreamContent(HttpContext.Request.Body);
+			var result = await sc.ReadAsByteArrayAsync();
+			streamQueueManager.AddToQueue(id.ToString(), result);
+			return Ok();
+		}
 
-        public struct key
-        {
-            public string PublicKey { get; set; }
-        }
-    }
+		public struct PublicKeyModel
+		{
+			public string PublicKey { get; set; }
+		}
+	}
 }

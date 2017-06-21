@@ -49,7 +49,7 @@ namespace TriangleStreamingServer.Models
 			}
 			catch(FileNotFoundException e)
 			{
-				Console.WriteLine("Private key file not found at {0}! Please check application config and private key file.", path);
+				Console.WriteLine("Private PublicKeyModel file not found at {0}! Please check application config and private PublicKeyModel file.", path);
 				Environment.Exit(FILE_NOT_FOUND);
 			}
 
