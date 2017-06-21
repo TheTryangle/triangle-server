@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,12 +6,11 @@ using System.IO;
 using TriangleStreamingServer.Models;
 using System.Net.Http;
 using Org.BouncyCastle.Crypto;
-using System.Text;
 
 namespace TriangleStreamingServer.Controllers
 {
     //[Produces("application/json")]
-    //[Route("api/Stream")]
+    [Route("api/Stream")]
     public class StreamController : Controller
     {
         private StreamQueueManager streamQueueManager;
@@ -24,7 +21,7 @@ namespace TriangleStreamingServer.Controllers
         }
 
         [HttpGet]
-        [Route("api/Stream/Connect")]
+        [Route("Connect")]
         public Guid Connect()
         {
             Guid identity = Guid.NewGuid();            
@@ -33,7 +30,7 @@ namespace TriangleStreamingServer.Controllers
         }
 
         [HttpPut]
-        [Route("api/Stream/SendKey/{id?}")]        
+        [Route("SendKey/{id?}")]        
         public IActionResult SendKey(Guid id, [FromBody]key publicKey)
         {            
             TextReader textReader = new StringReader(publicKey.PublicKey);
@@ -44,7 +41,7 @@ namespace TriangleStreamingServer.Controllers
         }
 
         [HttpPut]
-        [Route("api/Stream/Send/{id?}")]
+        [Route("Send/{id?}")]
         public async Task<IActionResult> Send(Guid id)
         {
             StreamContent sc = new StreamContent(HttpContext.Request.Body);

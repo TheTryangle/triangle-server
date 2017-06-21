@@ -61,5 +61,5 @@ namespace TriangleStreamingServer
             
             app.UseMvc();
         }
-	}
+    }
 }
