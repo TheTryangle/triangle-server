@@ -54,7 +54,7 @@ namespace TriangleStreamingServer.Controllers
         public struct PublicKeyModel
         {
             public string PublicKey { get; set; }
-			public string StreamerName { get; set; }
+	    public string StreamerName { get; set; }
         }
     }
 }
