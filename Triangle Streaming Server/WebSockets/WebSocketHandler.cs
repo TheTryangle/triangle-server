@@ -39,7 +39,15 @@ namespace TriangleStreamingServer.WebSockets
 			}
 		}
 
-		public async Task Send(string socketId, byte[] data)
+        public async Task SendToAll(string data, params string[] clients)
+        {
+            foreach (string client in clients)
+            {
+                await Send(client, data);
+            }
+        }
+
+        public async Task Send(string socketId, byte[] data)
 		{
 			await Send(WebSocketConnectionManager.GetSocketById(socketId), data);
 		}
@@ -79,6 +87,7 @@ namespace TriangleStreamingServer.WebSockets
 								   endOfMessage: true,
 								   cancellationToken: CancellationToken.None);
 		}
+       
 
 		public abstract Task OnMessage(WebSocket socket, WebSocketReceiveResult result, WebSocketMessageType type, byte[] buffer);
 	}

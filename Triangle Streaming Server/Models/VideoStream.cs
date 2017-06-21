@@ -26,6 +26,7 @@ namespace TriangleStreamingServer.Models
 			Console.WriteLine("Their ID is {0}", socketId);
 			StreamManager.Streams.TryAdd(socketId, new Stream(socketId));
 
+			await Send(socket, $"ID: {socketId}");
 			await Send(socket, "PUBKEY");
 		}
 

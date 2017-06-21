@@ -61,8 +61,13 @@ namespace TriangleStreamingServer.Models
 
 		public void AddToQueue(string ID, byte[] item)
 		{
-			var stream = Streams[ID];
-			if (stream == null)
+			Stream stream = null;
+
+			if (Streams.ContainsKey(ID))
+			{
+				Streams.TryGetValue(ID, out stream);
+			}
+			else
 			{
 				stream = new Stream(ID);
 				Streams.TryAdd(ID, stream);
