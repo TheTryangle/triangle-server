@@ -36,9 +36,9 @@ namespace TriangleStreamingServer.Models
 		public override Task OnDisconnected(WebSocket socket)
 		{
 			string id = WebSocketConnectionManager.GetId(socket);
-
-			Clients.TryRemove(id, out List<string> removedValue);
-			return base.OnDisconnected(socket);
+            Clients.TryRemove(id, out List<string> removedValue);
+            Console.WriteLine("Someone disconnected");
+            return base.OnDisconnected(socket);
 
 		}
 
@@ -50,36 +50,45 @@ namespace TriangleStreamingServer.Models
 			}
 			string data = Encoding.UTF8.GetString(buffer).Trim('\0');
 			string id = WebSocketConnectionManager.GetId(socket);
-			Console.WriteLine(data);
+			//Console.WriteLine(data);
 
 			ChatAction sendMessage = JsonConvert.DeserializeObject<ChatAction>(data);
-            Console.WriteLine(sendMessage);
+            //Console.WriteLine(sendMessage);
 
 			switch (sendMessage.ActionType)
 			{
 				case ChatAction.Type.JOIN:
 					{
+                        
 						if (!Clients.ContainsKey(id))
 						{
 							// Not chatting
 							Clients.TryAdd(id, new List<string> { sendMessage.StreamId });
+
 						}
 						else
 						{
-							Clients[id].Add(sendMessage.StreamId);
-						}
-						break;
+
+                            Console.WriteLine("Someone joined to chat");
+                            Clients[id].Add(sendMessage.StreamId);
+                        }
+
+                        Console.WriteLine(data);
+                        break;
 					}
 				case ChatAction.Type.LEAVE:
 					{
-						Clients[id].Remove(sendMessage.StreamId);
+
+                        Console.WriteLine("Someone left");
+                        Clients[id].Remove(sendMessage.StreamId);
 						break;
 					}
 				case ChatAction.Type.MESSAGE:
 					{
 						var _list = Clients.Where(p => p.Value.Contains(sendMessage.StreamId) && p.Key != id).Select(p => p.Key).ToArray();
 						await SendToAll(data, _list);
-						break;
+                        Console.WriteLine(data);
+                        break;
 					}
 				default:
 					{
