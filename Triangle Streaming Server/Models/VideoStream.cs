@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TriangleStreamingServer.Extensions;
 using TriangleStreamingServer.WebSockets;
+using Newtonsoft.Json;
 
 namespace TriangleStreamingServer.Models
 {
@@ -25,31 +26,53 @@ namespace TriangleStreamingServer.Models
 			Console.WriteLine("Their ID is {0}", socketId);
 			StreamManager.Streams.TryAdd(socketId, new Stream(socketId));
 
+			await Send(socket, $"ID: {socketId}");
 			await Send(socket, "PUBKEY");
 		}
 
 		public override async Task OnMessage(WebSocket socket, WebSocketReceiveResult result, WebSocketMessageType type, byte[] buffer)
 		{
 			Console.WriteLine("Received data on server");
-			string socketId = WebSocketConnectionManager.GetId(socket);
+			string socketId = string.Empty;
+			try
+			{
+				socketId = WebSocketConnectionManager.GetId(socket);
+			}
+			catch (Exception ex)
+			{
+				// Unkoown socketId
+				Console.WriteLine("unknown id");
+				return;
+			}
 			switch (type)
 			{
 				case WebSocketMessageType.Binary:
 					{
 						// binary data
-
-						byte[] latestSignature = StreamManager.Streams[socketId].LatestSignature;
-						AsymmetricKeyParameter publicKey = StreamManager.Streams[socketId].PublicKey;
-
-						bool validData = buffer.Validate(latestSignature, publicKey);
-						if (validData)
+						if (StreamManager.Streams.ContainsKey(socketId))
 						{
-							// Valid file
-							StreamManager.AddToQueue(socketId, buffer);
-						}
-						else
-						{
-							Console.WriteLine($"{socketId}: Data has been tampered with!");
+							Stream stream;
+							bool couldGetValue = StreamManager.Streams.TryGetValue(socketId, out stream);
+
+							if (couldGetValue)
+							{
+								byte[] latestSignature = StreamManager.Streams[socketId].LatestSignature;
+								AsymmetricKeyParameter publicKey = StreamManager.Streams[socketId].PublicKey;
+
+								bool validData = buffer.Validate(latestSignature, publicKey);
+								if (validData)
+								{
+									// Valid file
+									StreamManager.AddToQueue(socketId, buffer);
+								}
+								else
+								{
+									Console.WriteLine($"{socketId}: Data has been tampered with!");
+								}
+								return;
+							}
+
+							Console.WriteLine("Unable to add to queue");
 						}
 						break;
 					}
@@ -66,7 +89,21 @@ namespace TriangleStreamingServer.Models
 							Org.BouncyCastle.OpenSsl.PemReader pemReader = new Org.BouncyCastle.OpenSsl.PemReader(textReader);
 							AsymmetricKeyParameter publicKeyParam = (AsymmetricKeyParameter)pemReader.ReadObject();
 
-							StreamManager.Streams[socketId].PublicKey = publicKeyParam;
+							if (StreamManager.Streams.ContainsKey(socketId))
+							{
+								Stream stream;
+								bool couldGetValue = StreamManager.Streams.TryGetValue(socketId, out stream);
+
+								if (couldGetValue)
+								{
+									Stream updatedStream = stream;
+									updatedStream.PublicKey = publicKeyParam;
+									StreamManager.Streams.TryUpdate(socketId, updatedStream, stream);
+								}
+
+								return;
+							}
+							Console.WriteLine("Unable to set public key");
 							return;
 						}
 						else if (data.StartsWith("HASH:"))
@@ -78,8 +115,43 @@ namespace TriangleStreamingServer.Models
 
 							byte[] decodedSignature = Convert.FromBase64String(signature);
 
-							StreamManager.Streams[socketId].LatestSignature = decodedSignature;
+							if (StreamManager.Streams.ContainsKey(socketId))
+							{
+								Stream stream;
+								bool couldGetValue = StreamManager.Streams.TryGetValue(socketId, out stream);
+
+								if (couldGetValue)
+								{
+									Stream updatedStream = stream;
+									updatedStream.LatestSignature = decodedSignature;
+									StreamManager.Streams.TryUpdate(socketId, updatedStream, stream);
+								}
+
+								return;
+							}
+							Console.WriteLine("Unable to set latest signature");
 							return;
+						}
+						else if (data.StartsWith("{") && data.EndsWith("}"))
+						{
+							//The definition for the expected JSON object.
+							var streamInfoDefinition = new { StreamerName = "" };
+
+							try
+							{
+								//Extract streamer name from JSON, and put it into the streamer's Stream object.
+								var streamInfo = JsonConvert.DeserializeAnonymousType(data, streamInfoDefinition);
+								StreamManager.Streams[socketId].StreamerName = streamInfo.StreamerName;
+							}
+							catch (JsonReaderException e)
+							{
+								Console.WriteLine("Received invalid JSON: {0}", data);
+							}
+						}
+						else if (data.StartsWith("VIEWERCOUNT"))
+						{
+							int count = StreamManager.ReceivingWebSocket.Clients.Where(x => x.Value.Equals(socketId.ToString())).Count();
+							await Send(socket, $"VIEWERCOUNT: {count.ToString()}");
 						}
 
 						break;

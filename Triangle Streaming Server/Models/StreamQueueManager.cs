@@ -47,7 +47,7 @@ namespace TriangleStreamingServer.Models
 					_keyPair = (AsymmetricCipherKeyPair)new PemReader(reader).ReadObject();
 				}
 			}
-			catch(FileNotFoundException e)
+			catch (FileNotFoundException e)
 			{
 				Console.WriteLine("Private key file not found at {0}! Please check application config and private key file.", path);
 				Environment.Exit(FILE_NOT_FOUND);
@@ -61,13 +61,19 @@ namespace TriangleStreamingServer.Models
 
 		public void AddToQueue(string ID, byte[] item)
 		{
-			var stream = Streams[ID];
-			if (stream == null)
+			Stream stream = null;
+
+			if (Streams.ContainsKey(ID))
+			{
+				Streams.TryGetValue(ID, out stream);
+			}
+			else
 			{
 				stream = new Stream(ID);
 				Streams.TryAdd(ID, stream);
 			}
 
+			stream.LatestReceivedTime = DateTime.Now;
 			stream.VideoQueue.Enqueue(item);
 		}
 
@@ -77,6 +83,9 @@ namespace TriangleStreamingServer.Models
 				.Select(i => Observable.FromAsync(CheckStreamQueue))
 				.Concat()
 				.Subscribe();
+
+			Observable.Interval(TimeSpan.FromSeconds(30))
+				.Subscribe(i => CheckStoppedStreamers());
 		}
 
 		private async Task CheckStreamQueue()
@@ -97,22 +106,31 @@ namespace TriangleStreamingServer.Models
 
 						await ReceivingWebSocket.Send(nextVideo, receivingClients.ToArray());
 
-						//Every 5 video fragments, sign a fragment.
-						if (stream.FragmentCount >= 5)
-						{
-							string base64 = Convert.ToBase64String(nextVideo);
-							string encryptedHash = base64.Sign(_keyPair.Private);
+						//Sign video fragment.
+						string base64 = Convert.ToBase64String(nextVideo);
+						string encryptedHash = base64.Sign(_keyPair.Private);
 
-							await ReceivingWebSocket.Send($"SIGN: {encryptedHash}", receivingClients.ToArray());
-							stream.FragmentCount = 0;
-						}
-						stream.FragmentCount += 1;
+						await ReceivingWebSocket.Send($"SIGN: {encryptedHash}", receivingClients.ToArray());
 					}
 				}
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex.ToString());
+			}
+		}
+
+		private void CheckStoppedStreamers()
+		{
+			DateTime now = DateTime.Now;
+
+			foreach (Stream stream in Streams.Values.ToList())
+			{
+				TimeSpan difference = now - stream.LatestReceivedTime;
+				if(difference.TotalSeconds > 30.0)
+				{
+					Streams.TryRemove(stream.ClientID, out Stream value);
+				}
 			}
 		}
 	}
