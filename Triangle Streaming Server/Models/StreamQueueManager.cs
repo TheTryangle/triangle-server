@@ -79,7 +79,7 @@ namespace TriangleStreamingServer.Models
 				.Concat()
 				.Subscribe();
 
-			Observable.Interval(TimeSpan.FromMinutes(1))
+			Observable.Interval(TimeSpan.FromSeconds(30))
 				.Subscribe(i => CheckStoppedStreamers());
 		}
 
@@ -122,7 +122,7 @@ namespace TriangleStreamingServer.Models
 			foreach (Stream stream in Streams.Values.ToList())
 			{
 				TimeSpan difference = now - stream.LatestReceivedTime;
-				if(difference.TotalMinutes > 1.0)
+				if(difference.TotalSeconds > 30.0)
 				{
 					Streams.TryRemove(stream.ClientID, out Stream value);
 				}
