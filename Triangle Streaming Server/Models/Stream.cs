@@ -13,6 +13,9 @@ namespace TriangleStreamingServer.Models
 		public string Title { get; set; }
 		public string StreamerName { get; set; }
 
+		[JsonIgnore]
+		public DateTime LatestReceivedTime { get; set; }
+
 		//This info is used internally, and should not be sent to clients.
 		[JsonIgnore]
 		public Queue<byte[]> VideoQueue { get; private set; }
