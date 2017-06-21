@@ -56,8 +56,8 @@ namespace TriangleStreamingServer.Models
 
 							if (couldGetValue)
 							{
-								byte[] latestSignature = StreamManager.Streams[socketId].LatestSignature;
-								AsymmetricKeyParameter publicKey = StreamManager.Streams[socketId].PublicKey;
+								byte[] latestSignature = stream.LatestSignature;
+								AsymmetricKeyParameter publicKey = stream.PublicKey;
 
 								bool validData = buffer.Validate(latestSignature, publicKey);
 								if (validData)
@@ -141,7 +141,22 @@ namespace TriangleStreamingServer.Models
 							{
 								//Extract streamer name from JSON, and put it into the streamer's Stream object.
 								var streamInfo = JsonConvert.DeserializeAnonymousType(data, streamInfoDefinition);
-								StreamManager.Streams[socketId].StreamerName = streamInfo.StreamerName;
+
+								if (StreamManager.Streams.ContainsKey(socketId))
+								{
+									Stream stream;
+									bool couldGetValue = StreamManager.Streams.TryGetValue(socketId, out stream);
+
+									if (couldGetValue)
+									{
+										Stream updatedStream = stream;
+										updatedStream.StreamerName = streamInfo.StreamerName;
+										StreamManager.Streams.TryUpdate(socketId, updatedStream, stream);
+									}
+
+									return;
+								}
+								Console.WriteLine("Unable to set streamerName");
 							}
 							catch (JsonReaderException e)
 							{
