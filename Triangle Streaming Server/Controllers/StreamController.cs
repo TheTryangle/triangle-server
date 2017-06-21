@@ -6,6 +6,7 @@ using System.IO;
 using TriangleStreamingServer.Models;
 using System.Net.Http;
 using Org.BouncyCastle.Crypto;
+using System.Linq;
 
 namespace TriangleStreamingServer.Controllers
 {
@@ -49,6 +50,13 @@ namespace TriangleStreamingServer.Controllers
 			var result = await sc.ReadAsByteArrayAsync();
 			streamQueueManager.AddToQueue(id.ToString(), result);
 			return Ok();
+		}
+
+		[HttpGet]
+		[Route("GetViewers/{id?}")]
+		public int GetViewers(Guid id)
+		{
+			return streamQueueManager.ReceivingWebSocket.Clients.Where(x => x.Value.Equals(id.ToString())).Count();			
 		}
 
 		public struct PublicKeyModel
