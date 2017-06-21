@@ -30,12 +30,12 @@ namespace TriangleStreamingServer
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			// Add framework services.
-			services.AddMvc();
-
+			// Add framework services.	
 			services.AddWebSocketManager();
 
 			services.AddStreamManager();
+
+			services.AddMvc();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,8 +43,6 @@ namespace TriangleStreamingServer
 		{
 			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 			loggerFactory.AddDebug();
-
-			app.UseMvc();
 
 			var webSocketOptions = new WebSocketOptions()
 			{
@@ -60,6 +58,8 @@ namespace TriangleStreamingServer
 
 			app.MapWebSocketManager("/send", app.ApplicationServices.GetService<VideoStream>());
 			app.MapWebSocketManager("/receive", receiveStream);
+
+			app.UseMvc();
 		}
 	}
 }
