@@ -33,7 +33,17 @@ namespace TriangleStreamingServer.Models
 		public override async Task OnMessage(WebSocket socket, WebSocketReceiveResult result, WebSocketMessageType type, byte[] buffer)
 		{
 			Console.WriteLine("Received data on server");
-			string socketId = WebSocketConnectionManager.GetId(socket);
+			string socketId = string.Empty;
+			try
+			{
+				socketId = WebSocketConnectionManager.GetId(socket);
+			}
+			catch (Exception ex)
+			{
+				// Unkoown socketId
+				Console.WriteLine("unknown id");
+				return;
+			}
 			switch (type)
 			{
 				case WebSocketMessageType.Binary:
@@ -83,7 +93,7 @@ namespace TriangleStreamingServer.Models
 							StreamManager.Streams[socketId].LatestSignature = decodedSignature;
 							return;
 						}
-						else if(data.StartsWith("{") && data.EndsWith("}"))
+						else if (data.StartsWith("{") && data.EndsWith("}"))
 						{
 							//The definition for the expected JSON object.
 							var streamInfoDefinition = new { StreamerName = "" };
@@ -94,10 +104,15 @@ namespace TriangleStreamingServer.Models
 								var streamInfo = JsonConvert.DeserializeAnonymousType(data, streamInfoDefinition);
 								StreamManager.Streams[socketId].StreamerName = streamInfo.StreamerName;
 							}
-							catch(JsonReaderException e)
+							catch (JsonReaderException e)
 							{
 								Console.WriteLine("Received invalid JSON: {0}", data);
 							}
+						}
+						else if (data.StartsWith("VIEWERCOUNT"))
+						{
+							int count = StreamManager.ReceivingWebSocket.Clients.Where(x => x.Value.Equals(socketId.ToString())).Count();
+							await Send($"VIEWERCOUNT: {count.ToString()}", socketId);
 						}
 
 						break;
