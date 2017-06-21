@@ -37,6 +37,7 @@ namespace TriangleStreamingServer.Controllers
             Org.BouncyCastle.OpenSsl.PemReader pemReader = new Org.BouncyCastle.OpenSsl.PemReader(textReader);
             AsymmetricKeyParameter publicKeyParam = (AsymmetricKeyParameter)pemReader.ReadObject();
             streamQueueManager.Streams[id.ToString()].PublicKey = publicKeyParam;
+			streamQueueManager.Streams[id.ToString()].StreamerName = publicKey.StreamerName;
             return Ok();
         }
 
@@ -53,6 +54,7 @@ namespace TriangleStreamingServer.Controllers
         public struct PublicKeyModel
         {
             public string PublicKey { get; set; }
+			public string StreamerName { get; set; }
         }
     }
 }
