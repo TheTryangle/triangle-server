@@ -31,7 +31,7 @@ namespace TriangleStreamingServer.Controllers
 
         [HttpPut]
         [Route("SendKey/{id?}")]        
-        public IActionResult SendKey(Guid id, [FromBody]key publicKey)
+        public IActionResult SendKey(Guid id, [FromBody]PublicKeyModel publicKey)
         {            
             TextReader textReader = new StringReader(publicKey.PublicKey);
             Org.BouncyCastle.OpenSsl.PemReader pemReader = new Org.BouncyCastle.OpenSsl.PemReader(textReader);
@@ -50,7 +50,7 @@ namespace TriangleStreamingServer.Controllers
             return Ok();
         }
 
-        public struct key
+        public struct PublicKeyModel
         {
             public string PublicKey { get; set; }
         }
