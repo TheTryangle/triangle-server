@@ -61,20 +61,28 @@ namespace TriangleStreamingServer.Models
 
 		public void AddToQueue(string ID, byte[] item)
 		{
-			Stream stream = null;
-
 			if (Streams.ContainsKey(ID))
 			{
-				Streams.TryGetValue(ID, out stream);
+				Stream stream;
+				bool couldGetValue = Streams.TryGetValue(ID, out stream);
+
+				if (couldGetValue)
+				{
+					Stream updatedStream = stream;
+					updatedStream.LatestReceivedTime = DateTime.Now;
+					updatedStream.VideoQueue.Enqueue(item);
+					Streams.TryUpdate(ID, updatedStream, stream);
+				}
+
+				return;
 			}
 			else
 			{
-				stream = new Stream(ID);
+				Stream stream = new Stream(ID);
+				stream.LatestReceivedTime = DateTime.Now;
+				stream.VideoQueue.Enqueue(item);
 				Streams.TryAdd(ID, stream);
 			}
-
-			stream.LatestReceivedTime = DateTime.Now;
-			stream.VideoQueue.Enqueue(item);
 		}
 
 		public void RunCheckQueue()
