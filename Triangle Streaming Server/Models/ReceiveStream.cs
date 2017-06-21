@@ -1,15 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Encodings;
-using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using TriangleStreamingServer.Extensions;
@@ -17,7 +14,7 @@ using TriangleStreamingServer.WebSockets;
 
 namespace TriangleStreamingServer.Models
 {
-	public class ReceiveStream : WebSockets.WebSocketHandler
+    public class ReceiveStream : WebSockets.WebSocketHandler
 	{
 		private static AsymmetricCipherKeyPair _keyPair;
 
