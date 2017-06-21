@@ -14,7 +14,7 @@ using TriangleStreamingServer.WebSockets;
 
 namespace TriangleStreamingServer.Models
 {
-	public class ReceiveStream : WebSockets.WebSocketHandler
+    public class ReceiveStream : WebSockets.WebSocketHandler
 	{
 		private static AsymmetricCipherKeyPair _keyPair;
 
@@ -39,13 +39,13 @@ namespace TriangleStreamingServer.Models
 					_keyPair = (AsymmetricCipherKeyPair)new PemReader(reader).ReadObject();
 				}
 			}
-			catch (FileNotFoundException e)
+			catch(FileNotFoundException e)
 			{
-				Console.WriteLine("Private PublicKeyModel file not found at {0}! Please check application config and private PublicKeyModel file.", path);
+				Console.WriteLine("Private key file not found at {0}! Please check application config and private key file.", path);
 				Environment.Exit(FILE_NOT_FOUND);
 			}
 
-			//Get public PublicKeyModel
+			//Get public key
 			TextWriter textWriter = new StringWriter();
 			PemWriter pemWriter = new PemWriter(textWriter);
 			pemWriter.WriteObject(_keyPair.Public);
@@ -114,7 +114,7 @@ namespace TriangleStreamingServer.Models
 				switch (data)
 				{
 					case "PUBKEY":
-						//Send public PublicKeyModel to client
+						//Send public key to client
 						await this.Send(socket, _pubKey);
 						break;
 					case "LIST":

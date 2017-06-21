@@ -19,7 +19,7 @@ namespace TriangleStreamingServer.Extensions
 		/// Signes the data with the <paramref name="privateKey"/>
 		/// </summary>
 		/// <param name="stringToSign">The string to sign</param>
-		/// <param name="privateKey">The private PublicKeyModel to use for signing</param>
+		/// <param name="privateKey">The private key to use for signing</param>
 		/// <returns></returns>
 		public static string Sign(this string stringToSign, AsymmetricKeyParameter privateKey)
 		{
@@ -30,7 +30,7 @@ namespace TriangleStreamingServer.Extensions
 		/// Signes the data with the <paramref name="privateKey"/>
 		/// </summary>
 		/// <param name="bytesToSign">The data to sign</param>
-		/// <param name="privateKey">The private PublicKeyModel to use for signing</param>
+		/// <param name="privateKey">The private key to use for signing</param>
 		/// <returns></returns>
 		public static string Sign(this byte[] bytesToSign, AsymmetricKeyParameter privateKey)
 		{
@@ -47,7 +47,7 @@ namespace TriangleStreamingServer.Extensions
 		/// </summary>
 		/// <param name="bytesToValidate">The data to validate</param>
 		/// <param name="signature">The correct signature of the data</param>
-		/// <param name="publicKey">The public PublicKeyModel use for validating</param>
+		/// <param name="publicKey">The public key use for validating</param>
 		/// <returns></returns>
 		public static bool Validate(this byte[] bytesToValidate, byte[] signature, AsymmetricKeyParameter publicKey)
 		{
@@ -62,7 +62,7 @@ namespace TriangleStreamingServer.Extensions
 		/// Encrypts and generates a hash.
 		/// </summary>
 		/// <param name="bytesToHash">The data to hash</param>
-		/// <param name="privateKey">The private PublicKeyModel to use for hashing</param>
+		/// <param name="privateKey">The private key to use for hashing</param>
 		/// <returns>Base64 string with encrypted hash</returns>
 		public static string EncryptHash(this byte[] bytesToHash, AsymmetricKeyParameter privateKey)
 		{
@@ -93,7 +93,7 @@ namespace TriangleStreamingServer.Extensions
 		/// Decrypts the <paramref name="data"/> using the <paramref name="privateKey"/> to an UTF8 string
 		/// </summary>
 		/// <param name="data">The data to decrypt</param>
-		/// <param name="privateKey">The private PublicKeyModel used for decryption</param>
+		/// <param name="privateKey">The private key used for decryption</param>
 		/// <returns>UTF8 string with decrypted data</returns>
 		public static string Decrypt(this byte[] data, AsymmetricKeyParameter privateKey)
 		{
