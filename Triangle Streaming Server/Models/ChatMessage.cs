@@ -12,7 +12,7 @@ namespace TriangleStreamingServer.Models
 		public DateTime Timestamp { get; set; }
 		public string Message { get; set; }
 		public Type ActionType { get; set; }
-        public string name { get; set; }
+		public string Name { get; set; }
 
 		public enum Type
 		{
